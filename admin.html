@@ -2,43 +2,80 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>TidyCars Admin Dashboard</title>
+<title>TidyCars Admin</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-h1 { color: #111; }
+body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
+#login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.login-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+.login-card h2 { margin-bottom: 24px; color: #111; }
+.login-card input { width: 100%; padding: 12px; margin-top: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; box-sizing: border-box; }
+.login-card button { width: 100%; padding: 12px; margin-top: 16px; background: #111; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; }
+#login-error { color: red; font-size: 13px; margin-top: 10px; }
+#dashboard { display: none; margin: 40px; }
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.logout-btn { padding: 8px 16px; background: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; }
 .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-button { padding: 10px 20px; cursor: pointer; border: none; background: #111; color: white; border-radius: 4px; font-size: 14px; }
-button:hover { background: #333; }
+button.run { padding: 10px 20px; background: #111; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
 pre { background: #111; color: #0f0; padding: 15px; overflow: auto; border-radius: 6px; font-size: 13px; }
 #msg { margin-top: 10px; font-size: 14px; color: green; }
 </style>
 </head>
 <body>
-<h1>TidyCars Admin Dashboard</h1>
 
-<div class="section">
-  <button onclick="runScheduler()">Run Scheduler</button>
-  <div id="msg"></div>
+<div id="login-screen">
+  <div class="login-card">
+    <h2>🔒 TidyCars Admin</h2>
+    <input type="password" id="admin-pass" placeholder="Admin Password">
+    <button onclick="doLogin()">Login</button>
+    <div id="login-error"></div>
+  </div>
 </div>
 
-<div class="section">
-  <h2>Today's Assignments</h2>
-  <pre id="assignments">Loading...</pre>
-</div>
+<div id="dashboard">
+  <div class="top-bar">
+    <h1>TidyCars Admin Dashboard</h1>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
 
-<div class="section">
-  <h2>Washer Load</h2>
-  <pre id="load">Loading...</pre>
-</div>
-
-<div class="section">
-  <h2>System Health</h2>
-  <pre id="health">Loading...</pre>
+  <div class="section">
+    <button class="run" onclick="runScheduler()">Run Scheduler</button>
+    <div id="msg"></div>
+  </div>
+  <div class="section">
+    <h2>Today's Assignments</h2>
+    <pre id="assignments">Loading...</pre>
+  </div>
+  <div class="section">
+    <h2>Washer Load</h2>
+    <pre id="load">Loading...</pre>
+  </div>
+  <div class="section">
+    <h2>System Health</h2>
+    <pre id="health">Loading...</pre>
+  </div>
 </div>
 
 <script>
 const URL = "https://uckgehcuplkfqtncyyff.supabase.co"
 const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVja2dlaGN1cGxrZnF0bmN5eWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTAyNDksImV4cCI6MjA4NjQ4NjI0OX0.89102EDvJFwC0NS7txqq3EWnPCY87tSrBGOPRvLdfU8"
+const ADMIN_PASSWORD = "admin@tidycars0601"
+
+function doLogin() {
+  const pass = document.getElementById("admin-pass").value
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById("login-screen").style.display = "none"
+    document.getElementById("dashboard").style.display = "block"
+    loadData()
+  } else {
+    document.getElementById("login-error").textContent = "Wrong password."
+  }
+}
+
+function doLogout() {
+  document.getElementById("dashboard").style.display = "none"
+  document.getElementById("login-screen").style.display = "flex"
+  document.getElementById("admin-pass").value = ""
+}
 
 async function get(table) {
   const res = await fetch(`${URL}/rest/v1/${table}?select=*`, {
@@ -62,15 +99,17 @@ async function runScheduler() {
 async function loadData() {
   const assignments = await get("today_assignments")
   document.getElementById("assignments").textContent = JSON.stringify(assignments, null, 2)
-
   const load = await get("today_washer_load")
   document.getElementById("load").textContent = JSON.stringify(load, null, 2)
-
   const health = await get("system_health")
   document.getElementById("health").textContent = JSON.stringify(health, null, 2)
 }
 
-loadData()
+function doLogout() {
+  document.getElementById("dashboard").style.display = "none"
+  document.getElementById("login-screen").style.display = "flex"
+  document.getElementById("admin-pass").value = ""
+}
 </script>
 </body>
 </html>
