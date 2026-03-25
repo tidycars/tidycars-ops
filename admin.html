@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TidyCars Admin Dashboard</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+h1 { color: #111; }
+.section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+button { padding: 10px 20px; cursor: pointer; border: none; background: #111; color: white; border-radius: 4px; font-size: 14px; }
+button:hover { background: #333; }
+pre { background: #111; color: #0f0; padding: 15px; overflow: auto; border-radius: 6px; font-size: 13px; }
+#msg { margin-top: 10px; font-size: 14px; color: green; }
+</style>
+</head>
+<body>
+<h1>TidyCars Admin Dashboard</h1>
+
+<div class="section">
+  <button onclick="runScheduler()">Run Scheduler</button>
+  <div id="msg"></div>
+</div>
+
+<div class="section">
+  <h2>Today's Assignments</h2>
+  <pre id="assignments">Loading...</pre>
+</div>
+
+<div class="section">
+  <h2>Washer Load</h2>
+  <pre id="load">Loading...</pre>
+</div>
+
+<div class="section">
+  <h2>System Health</h2>
+  <pre id="health">Loading...</pre>
+</div>
+
+<script>
+const URL = "https://uckgehcuplkfqtncyyff.supabase.co"
+const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVja2dlaGN1cGxrZnF0bmN5eWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTAyNDksImV4cCI6MjA4NjQ4NjI0OX0.89102EDvJFwC0NS7txqq3EWnPCY87tSrBGOPRvLdfU8"
+
+async function get(table) {
+  const res = await fetch(`${URL}/rest/v1/${table}?select=*`, {
+    headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}` }
+  })
+  return res.json()
+}
+
+async function runScheduler() {
+  const msg = document.getElementById("msg")
+  msg.textContent = "Running scheduler..."
+  const res = await fetch(`${URL}/rest/v1/rpc/run_daily_scheduler`, {
+    method: "POST",
+    headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  })
+  msg.textContent = res.ok ? "✅ Scheduler executed successfully" : "❌ Scheduler failed"
+  loadData()
+}
+
+async function loadData() {
+  const assignments = await get("today_assignments")
+  document.getElementById("assignments").textContent = JSON.stringify(assignments, null, 2)
+
+  const load = await get("today_washer_load")
+  document.getElementById("load").textContent = JSON.stringify(load, null, 2)
+
+  const health = await get("system_health")
+  document.getElementById("health").textContent = JSON.stringify(health, null, 2)
+}
+
+loadData()
+</script>
+</body>
+</html>

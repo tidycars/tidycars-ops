@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TidyCars Washer Dashboard</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 30px; background: #f4f4f4; }
+h1 { color: #111; }
+.section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+select, button { padding: 10px; margin-top: 10px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; }
+button { background: #111; color: white; border: none; cursor: pointer; }
+button:hover { background: #333; }
+.job { background: #f9f9f9; border: 1px solid #ddd; padding: 16px; margin-top: 12px; border-radius: 6px; }
+.job p { margin: 4px 0; font-size: 14px; }
+.job strong { color: #111; }
+.complete-btn { background: #1a7a1a; margin-top: 10px; }
+.complete-btn:hover { background: #145214; }
+#no-jobs { color: #888; font-size: 14px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Washer Dashboard</h1>
+
+<div class="section">
+  <label><strong>Select Washer</strong></label><br>
+  <select id="washerSelect"></select><br>
+  <button onclick="loadJobs()">Load Today's Jobs</button>
+</div>
+
+<div class="section">
+  <h2>Today's Jobs</h2>
+  <div id="jobs"><p id="no-jobs">Select your name and click Load Today's Jobs.</p></div>
+</div>
+
+<script>
+const URL = "https://uckgehcuplkfqtncyyff.supabase.co"
+const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVja2dlaGN1cGxrZnF0bmN5eWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTAyNDksImV4cCI6MjA4NjQ4NjI0OX0.89102EDvJFwC0NS7txqq3EWnPCY87tSrBGOPRvLdfU8"
+
+async function loadWashers() {
+  const res = await fetch(`${URL}/rest/v1/washers?select=id,full_name&is_active=eq.true`, {
+    headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}` }
+  })
+  const data = await res.json()
+  const select = document.getElementById("washerSelect")
+  select.innerHTML = ""
+  data.forEach(w => {
+    const opt = document.createElement("option")
+    opt.value = w.id
+    opt.textContent = w.full_name
+    select.appendChild(opt)
+  })
+}
+
+async function loadJobs() {
+  const washerId = document.getElementById("washerSelect").value
+  const res = await fetch(`${URL}/rest/v1/today_assignments?washer_id=eq.${washerId}&select=*`, {
+    headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}` }
+  })
+  const data = await res.json()
+  const jobsDiv = document.getElementById("jobs")
+  jobsDiv.innerHTML = ""
+
+  if (!data.length) {
+    jobsDiv.innerHTML = "<p id='no-jobs'>No jobs assigned for today.</p>"
+    return
+  }
+
+  data.forEach(job => {
+    const div = document.createElement("div")
+    div.className = "job"
+    div.innerHTML = `
+      <p><strong>Customer:</strong> ${job.customer_name}</p>
+      <p><strong>Locality:</strong> ${job.locality}</p>
+      <p><strong>Address:</strong> ${job.address}</p>
+      <p><strong>Car:</strong> ${job.car_model} — ${job.car_number}</p>
+      <p><strong>Zone:</strong> ${job.zone_id}</p>
+      <p><strong>Date:</strong> ${job.scheduled_date}</p>
+      <button class="complete-btn" onclick="completeJob('${job.id}', this)">✅ Mark Complete</button>
+    `
+    jobsDiv.appendChild(div)
+  })
+}
+
+async function completeJob(id, btn) {
+  btn.textContent = "Updating..."
+  btn.disabled = true
+  const res = await fetch(`${URL}/rest/v1/assignments?id=eq.${id}`, {
+    method: "PATCH",
+    headers: {
+      "apikey": KEY,
+      "Authorization": `Bearer ${KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify({ status: "completed" })
+  })
+  if (res.ok) {
+    btn.closest(".job").style.opacity = "0.4"
+    btn.textContent = "✅ Completed"
+  } else {
+    btn.textContent = "❌ Failed — try again"
+    btn.disabled = false
+  }
+}
+
+loadWashers()
+</script>
+</body>
+</html>
