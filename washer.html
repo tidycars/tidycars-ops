@@ -2,58 +2,165 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>TidyCars Washer Dashboard</title>
+<title>TidyCars Washer</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 30px; background: #f4f4f4; }
+body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
 h1 { color: #111; }
-.section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-select, button { padding: 10px; margin-top: 10px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; }
-button { background: #111; color: white; border: none; cursor: pointer; }
-button:hover { background: #333; }
-.job { background: #f9f9f9; border: 1px solid #ddd; padding: 16px; margin-top: 12px; border-radius: 6px; }
+
+/* Login Screen */
+#login-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f4f4f4;
+}
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 320px;
+  text-align: center;
+}
+.login-card h2 { margin-bottom: 24px; color: #111; }
+.login-card input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+.login-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: #111;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.login-card button:hover { background: #333; }
+#login-error { color: red; font-size: 13px; margin-top: 10px; }
+
+/* Dashboard */
+#dashboard { display: none; margin: 30px; }
+.section {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logout-btn {
+  padding: 8px 16px;
+  background: #cc0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.job {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-top: 12px;
+  border-radius: 6px;
+}
 .job p { margin: 4px 0; font-size: 14px; }
 .job strong { color: #111; }
-.complete-btn { background: #1a7a1a; margin-top: 10px; }
+.complete-btn {
+  padding: 10px 16px;
+  background: #1a7a1a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 14px;
+}
 .complete-btn:hover { background: #145214; }
 #no-jobs { color: #888; font-size: 14px; margin-top: 10px; }
 </style>
 </head>
 <body>
-<h1>Washer Dashboard</h1>
 
-<div class="section">
-  <label><strong>Select Washer</strong></label><br>
-  <select id="washerSelect"></select><br>
-  <button onclick="loadJobs()">Load Today's Jobs</button>
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-card">
+    <h2>🚗 TidyCars Washer</h2>
+    <input type="tel" id="login-phone" placeholder="Your Phone Number">
+    <input type="password" id="login-pin" placeholder="PIN">
+    <button onclick="doLogin()">Login</button>
+    <div id="login-error"></div>
+  </div>
 </div>
 
-<div class="section">
-  <h2>Today's Jobs</h2>
-  <div id="jobs"><p id="no-jobs">Select your name and click Load Today's Jobs.</p></div>
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="section">
+    <div class="top-bar">
+      <h1>Washer Dashboard</h1>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+    <p id="washer-greeting" style="color:#555;"></p>
+    <button onclick="loadJobs()" style="padding:10px 20px;background:#111;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;margin-top:8px;">
+      Load Today's Jobs
+    </button>
+  </div>
+
+  <div class="section">
+    <h2>Today's Jobs</h2>
+    <div id="jobs"><p id="no-jobs">Click "Load Today's Jobs" to see your assignments.</p></div>
+  </div>
 </div>
 
 <script>
 const URL = "https://uckgehcuplkfqtncyyff.supabase.co"
 const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVja2dlaGN1cGxrZnF0bmN5eWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTAyNDksImV4cCI6MjA4NjQ4NjI0OX0.89102EDvJFwC0NS7txqq3EWnPCY87tSrBGOPRvLdfU8"
 
-async function loadWashers() {
-  const res = await fetch(`${URL}/rest/v1/washers?select=id,full_name&is_active=eq.true`, {
+let currentWasher = null
+
+async function doLogin() {
+  const phone = document.getElementById("login-phone").value.trim()
+  const pin   = document.getElementById("login-pin").value.trim()
+  const err   = document.getElementById("login-error")
+  err.textContent = ""
+
+  if (!phone || !pin) {
+    err.textContent = "Please enter your phone and PIN."
+    return
+  }
+
+  const res = await fetch(`${URL}/rest/v1/washers?phone=eq.${phone}&pin=eq.${pin}&is_active=eq.true&select=id,full_name`, {
     headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}` }
   })
   const data = await res.json()
-  const select = document.getElementById("washerSelect")
-  select.innerHTML = ""
-  data.forEach(w => {
-    const opt = document.createElement("option")
-    opt.value = w.id
-    opt.textContent = w.full_name
-    select.appendChild(opt)
-  })
+
+  if (!data.length) {
+    err.textContent = "Invalid phone or PIN. Try again."
+    return
+  }
+
+  currentWasher = data[0]
+  document.getElementById("login-screen").style.display = "none"
+  document.getElementById("dashboard").style.display = "block"
+  document.getElementById("washer-greeting").textContent = `Welcome, ${currentWasher.full_name} 👋`
 }
 
 async function loadJobs() {
-  const washerId = document.getElementById("washerSelect").value
-  const res = await fetch(`${URL}/rest/v1/today_assignments?washer_id=eq.${washerId}&select=*`, {
+  if (!currentWasher) return
+  const res = await fetch(`${URL}/rest/v1/today_assignments?washer_id=eq.${currentWasher.id}&select=*`, {
     headers: { "apikey": KEY, "Authorization": `Bearer ${KEY}` }
   })
   const data = await res.json()
@@ -68,6 +175,7 @@ async function loadJobs() {
   data.forEach(job => {
     const div = document.createElement("div")
     div.className = "job"
+    div.id = `job-${job.id}`
     div.innerHTML = `
       <p><strong>Customer:</strong> ${job.customer_name}</p>
       <p><strong>Locality:</strong> ${job.locality}</p>
@@ -95,7 +203,7 @@ async function completeJob(id, btn) {
     body: JSON.stringify({ status: "completed" })
   })
   if (res.ok) {
-    btn.closest(".job").style.opacity = "0.4"
+    document.getElementById(`job-${id}`).style.opacity = "0.4"
     btn.textContent = "✅ Completed"
   } else {
     btn.textContent = "❌ Failed — try again"
@@ -103,7 +211,14 @@ async function completeJob(id, btn) {
   }
 }
 
-loadWashers()
+function doLogout() {
+  currentWasher = null
+  document.getElementById("dashboard").style.display = "none"
+  document.getElementById("login-screen").style.display = "flex"
+  document.getElementById("login-phone").value = ""
+  document.getElementById("login-pin").value = ""
+  document.getElementById("jobs").innerHTML = ""
+}
 </script>
 </body>
 </html>
