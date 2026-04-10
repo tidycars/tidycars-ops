@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TidyCars — Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #2a2a38;
+    --accent: #00e5a0;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #001a0f 0%, var(--bg) 70%);
+  }
+
+  .container {
+    text-align: center;
+    padding: 40px 24px;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .logo-mark {
+    width: 64px; height: 64px;
+    background: var(--accent);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 24px;
+  }
+
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  p { color: var(--muted); font-size: 15px; margin-bottom: 40px; line-height: 1.6; }
+
+  .cards { display: flex; flex-direction: column; gap: 12px; }
+
+  .portal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .portal-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .portal-left { display: flex; align-items: center; gap: 16px; text-align: left; }
+
+  .portal-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .icon-admin { background: #001a4d; }
+  .icon-washer { background: #003d2a; }
+  .icon-customer { background: #2a1a00; }
+  .icon-portal { background: #1a002a; }
+
+  .portal-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .portal-desc { font-size: 13px; color: var(--muted); }
+  .arrow { color: var(--muted); font-size: 18px; }
+  .footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-mark">🚗</div>
+  <h1>TidyCars Operations</h1>
+  <p>Select your portal to continue</p>
+
+  <div class="cards">
+    <a href="/admin.html" class="portal-card">
+      <div class="portal-left">
+        <div class="portal-icon icon-admin">🛡</div>
+        <div>
+          <div class="portal-title">Admin Panel</div>
+          <div class="portal-desc">Manage operations, run scheduler, view health</div>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="/washer.html" class="portal-card">
+      <div class="portal-left">
+        <div class="portal-icon icon-washer">🧹</div>
+        <div>
+          <div class="portal-title">Washer Dashboard</div>
+          <div class="portal-desc">View today's jobs and mark completions</div>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="/customer.html" class="portal-card">
+      <div class="portal-left">
+        <div class="portal-icon icon-customer">🚗</div>
+        <div>
+          <div class="portal-title">Customer Signup</div>
+          <div class="portal-desc">Subscribe to TidyCars Premium Plan</div>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="/portal.html" class="portal-card">
+      <div class="portal-left">
+        <div class="portal-icon icon-portal">👤</div>
+        <div>
+          <div class="portal-title">My TidyCars</div>
+          <div class="portal-desc">View subscription, wash history & upcoming washes</div>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+
+  <div class="footer">ops.tidycars.in · TidyCars Solutions LLP</div>
+</div>
+</body>
+</html>
